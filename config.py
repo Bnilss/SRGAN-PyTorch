@@ -41,7 +41,8 @@ parser.add_argument("-exp-name", default="exp000")
 parser.add_argument("-bs", type=int, default=16)
 parser.add_argument("-epochs", type=int, default=10)
 parser.add_argument("-img-size", default=96, type=int)
-parser.add_argument("-test-paths", nargs='+', default=(None, None))
+parser.add_argument("-test-hr-path", default=None)
+parser.add_argument("-imgs", default="results")
 parser.add_argument("-save-dir", default="results")
 
 args = parser.parse_args()
@@ -120,6 +121,6 @@ if mode == "valid":
     model_path = args.weights
 
     # Test data address.
-    lr_dir     = args.test_paths[0]
+    lr_dir     = args.imgs
     sr_dir     = args.save_dir
-    hr_dir     = args.test_paths[1]
+    hr_dir     = args.test_hr_path

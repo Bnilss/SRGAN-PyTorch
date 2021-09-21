@@ -24,29 +24,47 @@ import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
 from torch.utils.tensorboard import SummaryWriter
 
-from model import ContentLoss
-from model import Discriminator
-from model import Generator
+from model import ContentLoss, Discriminator, Generator
+from argparse import ArgumentParser
+
+
+parser = ArgumentParser("SRGAN", description="Photo-Realistic Single Image Super-Resolution Using a Generative Adversarial Network.")
+parser.add_argument("-mode", help="train or valid", default="valid")
+parser.add_argument("-seed", default=42, type=int)
+parser.add_argument("-no-cudnn-bench", action="store_false")
+parser.add_argument("-upscale-factor", default=4, type=int)
+parser.add_argument("-train-dir", help="path to the training dataset", default="data/ImageNet/train")
+parser.add_argument("-valid-dir", help="path to the validation dataset", default="data/ImageNet/valid")
+parser.add_argument("-weights")
+parser.add_argument("-device", default="cuda:0" if torch.cuda.is_available() else "cpu")
+parser.add_argument("-exp-name", default="exp000")
+parser.add_argument("-bs", type=int, default=16)
+parser.add_argument("-epochs", type=int, default=10)
+parser.add_argument("-img-size", default=96, type=int)
+parser.add_argument("-test-paths", nargs='+', default=(None, None))
+parser.add_argument("-save-dir", default="results")
+
+args = parser.parse_args()
 
 # ==============================================================================
 #                              Common configure
 # ==============================================================================
-torch.manual_seed(0)                       # Set random seed.
-upscale_factor   = 4                       # How many times the size of the high-resolution image in the data set is than the low-resolution image.
-device           = torch.device("cuda:0")  # Use the first GPU for processing by default.
-cudnn.benchmark  = True                    # If the dimension or type of the input data of the network does not change much, turn it on, otherwise turn it off.
-mode             = "train"                 # Run mode. Specific mode loads specific variables.
-exp_name         = "exp000"                # Experiment name.
+torch.manual_seed(args.seed)               # Set random seed.
+upscale_factor   = args.upscale_factor     # How many times the size of the high-resolution image in the data set is than the low-resolution image.
+device           = torch.device(args.device)  # Use the first GPU for processing by default.
+cudnn.benchmark  = args.no_cudnn_bench     # If the dimension or type of the input data of the network does not change much, turn it on, otherwise turn it off.
+mode             = args.mode                # Run mode. Specific mode loads specific variables.
+exp_name         = args.exp_name                # Experiment name.
 
 # ==============================================================================
 #                              Train configure
 # ==============================================================================
 if mode == "train":
     # Configure dataset.
-    train_dir             = "data/ImageNet/train"       # The address of the training dataset.
-    valid_dir             = "data/ImageNet/valid"       # The address of the validating dataset.
-    image_size            = 96                          # High-resolution image size in the training dataset.
-    batch_size            = 16                          # Dataset batch size.
+    train_dir             = args.train_dir       # The address of the training dataset.
+    valid_dir             = args.valid_dir      # The address of the validating dataset.
+    image_size            = args.img_size                          # High-resolution image size in the training dataset.
+    batch_size            = args.bs                          # Dataset batch size.
 
     # Configure model.
     discriminator         = Discriminator().to(device)  # Load the discriminator model.
@@ -62,7 +80,7 @@ if mode == "train":
 
     # Train epochs.
     p_epochs              = 46                          # The total number of epochs of the generator training phase.
-    epochs                = 10                          # The total number of epochs of the adversarial training phase.
+    epochs                = args.epochs                          # The total number of epochs of the adversarial training phase.
 
     # Loss function.
     psnr_criterion        = nn.MSELoss().to(device)     # PSNR metrics.
@@ -99,9 +117,9 @@ if mode == "valid":
 
     # Load model.
     model      = Generator().to(device)
-    model_path = f"results/{exp_name}/g-best.pth"
+    model_path = args.weights
 
     # Test data address.
-    lr_dir     = f"data/Set5/LRbicx4"
-    sr_dir     = f"results/test/{exp_name}"
-    hr_dir     = f"data/Set5/GTmod12"
+    lr_dir     = args.test_paths[0]
+    sr_dir     = args.save_dir
+    hr_dir     = args.test_paths[1]

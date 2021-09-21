@@ -175,6 +175,7 @@ def main() -> None:
     total_spectrum = 0.0
 
     # Get a list of test image file names.
+    is_dir = False
     if os.path.isdir(lr_dir):
         is_dir = True
         filenames = os.listdir(lr_dir)

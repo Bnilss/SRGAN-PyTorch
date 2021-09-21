@@ -176,15 +176,15 @@ def main() -> None:
 
     # Get a list of test image file names.
     if os.path.isdir(lr_dir):
+        is_dir = True
         filenames = os.listdir(lr_dir)
     else:
-        lr_dir = os.path.dirname(lr_dir)
         filenames = [lr_dir]
     # Get the number of test image files.
     total_files = len(filenames)
     print("Processing", total_files, "file(s) ..")
     for index in range(total_files):
-        lr_path = os.path.join(lr_dir, filenames[index])
+        lr_path = os.path.join(lr_dir, filenames[index]) if is_dir else filenames[index]
         sr_path = os.path.join(sr_dir, filenames[index])
         hr_path = os.path.join(hr_dir, filenames[index]) if hr_dir else None
         # Process low-resolution images into super-resolution images.

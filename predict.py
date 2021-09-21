@@ -175,7 +175,11 @@ def main() -> None:
     total_spectrum = 0.0
 
     # Get a list of test image file names.
-    filenames = os.listdir(lr_dir) if os.path.isdir(lr_dir) else [lr_dir]
+    if os.path.isdir(lr_dir):
+        filenames = os.listdir(lr_dir)
+    else:
+        lr_dir = os.path.dirname(lr_dir)
+        filenames = [lr_dir]
     # Get the number of test image files.
     total_files = len(filenames)
     print("Processing", total_files, "file(s) ..")
